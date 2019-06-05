@@ -85,7 +85,6 @@ public abstract class CameraListener {
 
     }
 
-
     /**
      * Notifies that user interacted with the screen and started focus with a gesture,
      * and the autofocus is trying to focus around that area. This can be used to draw things on screen.
@@ -94,7 +93,7 @@ public abstract class CameraListener {
      * @param point coordinates with respect to CameraView.getWidth() and CameraView.getHeight()
      */
     @UiThread
-    public void onFocusStart(@NonNull PointF point) {
+    public void onFocusStart(@Nullable PointF point) {
 
     }
 
@@ -109,7 +108,7 @@ public abstract class CameraListener {
      * @param point coordinates with respect to CameraView.getWidth() and CameraView.getHeight()
      */
     @UiThread
-    public void onFocusEnd(boolean successful, @NonNull PointF point) {
+    public void onFocusEnd(boolean successful, @Nullable  PointF point) {
 
     }
 

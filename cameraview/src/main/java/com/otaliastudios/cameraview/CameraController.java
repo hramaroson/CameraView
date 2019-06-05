@@ -72,7 +72,9 @@ abstract class CameraController implements
     protected Size mCaptureSize;
     protected Size mPreviewStreamSize;
     protected int mPreviewFormat;
+
     protected long mAutoFocusResetDelayMillis;
+    protected boolean mContinuousFocusMoveIsStarted = false;
 
     protected int mSensorOffset;
     private int mDisplayOffset;
@@ -188,6 +190,7 @@ abstract class CameraController implements
                 mState = STATE_STARTING;
                 LOG.i("Start:", "about to call onStart()", ss());
                 onStart();
+                setupContinuousFocusMove();
                 LOG.i("Start:", "returned from onStart().", "Dispatching.", ss());
                 mState = STATE_STARTED;
                 mCameraCallbacks.dispatchOnCameraOpened(mCameraOptions);
@@ -207,6 +210,10 @@ abstract class CameraController implements
                 mState = STATE_STOPPING;
                 LOG.i("Stop:", "about to call onStop()");
                 onStop();
+                if(mContinuousFocusMoveIsStarted) {
+                    mContinuousFocusMoveIsStarted = false;
+                    mCameraCallbacks.dispatchOnContinuousFocusMoveStarted(false);
+                }
                 LOG.i("Stop:", "returned from onStop().", "Dispatching.");
                 mState = STATE_STOPPED;
                 mCameraCallbacks.dispatchOnCameraClosed();
@@ -668,5 +675,26 @@ abstract class CameraController implements
         return result;
     }
 
+    public interface ContinuousFocusMoveCallback {
+        void onContinuousFocusMove(boolean start);
+    }
+
+    protected void setupContinuousFocusMove(){
+        if(mContinuousFocusMoveIsStarted){
+            mContinuousFocusMoveIsStarted = false;
+            mCameraCallbacks.dispatchOnContinuousFocusMoveStarted(false);
+        }
+        setContinuousFocusMoveCallback(new ContinuousFocusMoveCallback(){
+            @Override
+            public void onContinuousFocusMove(boolean start){
+                if( start != mContinuousFocusMoveIsStarted ) { // filter out repeated calls with same start value
+                    mContinuousFocusMoveIsStarted = start;
+
+                    mCameraCallbacks.dispatchOnContinuousFocusMoveStarted(start);
+                }
+            }
+        });
+    }
+    public abstract void setContinuousFocusMoveCallback(final ContinuousFocusMoveCallback callback);
     //endregion
 }

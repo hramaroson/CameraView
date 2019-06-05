@@ -7,6 +7,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.Camera.AutoFocusMoveCallback;
 import android.location.Location;
 import android.os.Build;
 import androidx.annotation.NonNull;
@@ -209,6 +210,28 @@ class Camera1 extends CameraController implements Camera.PreviewCallback, Camera
             throw new CameraException(e, CameraException.REASON_FAILED_TO_START_PREVIEW);
         }
         LOG.i(log, "Started preview.");
+    }
+
+    public void setContinuousFocusMoveCallback(final ContinuousFocusMoveCallback callback){
+        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ) {
+            try {
+                if( callback != null ) {
+                    mCamera.setAutoFocusMoveCallback(new AutoFocusMoveCallback() {
+                        @Override
+                        public void onAutoFocusMoving(boolean start, Camera camera) {
+                            LOG.i(TAG, "onAutoFocusMoving: " + start);
+                            callback.onContinuousFocusMove(start);
+                        }
+                    });
+                } else {
+                    mCamera.setAutoFocusMoveCallback(null);
+                }
+            } catch (RuntimeException e){
+                LOG.i(TAG, "runtime exception from setAutoFocusMoveCallback");
+            }
+        } else {
+            LOG.i(TAG, "setContinuousFocusMoveCallback requires Android JELLY_BEAN or higher");
+        }
     }
 
     private void stopPreview() {

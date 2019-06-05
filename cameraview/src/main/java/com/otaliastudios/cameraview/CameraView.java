@@ -1643,6 +1643,7 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         void onShutter(boolean shouldPlaySound);
         void dispatchOnVideoTaken(VideoResult result);
         void dispatchOnPictureTaken(PictureResult result);
+        void dispatchOnContinuousFocusMoveStarted(boolean started);
         void dispatchOnFocusStart(@Nullable Gesture trigger, @NonNull PointF where);
         void dispatchOnFocusEnd(@Nullable Gesture trigger, boolean success, @NonNull PointF where);
         void dispatchOnZoomChanged(final float newValue, @Nullable final PointF[] fingers);
@@ -1727,6 +1728,20 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
                 public void run() {
                     for (CameraListener listener : mListeners) {
                         listener.onVideoTaken(video);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void dispatchOnContinuousFocusMoveStarted(final boolean started) {
+            mLogger.i("dispatchOnContinuousFocusMoveStarted", started);
+            mUiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (CameraListener listener : mListeners) {
+                        if(started) listener.onFocusStart(null);
+                        else listener.onFocusEnd(true, null);
                     }
                 }
             });
